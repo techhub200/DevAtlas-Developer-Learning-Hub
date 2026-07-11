@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-from src.api.config import JWT_ALGORITHM,JWT_SECRET_KEY
+from src.core.jwt import JWT_ALGORITHM,JWT_SECRET_KEY
 import jwt 
 from datetime import timedelta,datetime
 from fastapi import HTTPException,status 
