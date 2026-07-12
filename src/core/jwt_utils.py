@@ -40,12 +40,18 @@ def decode_token(token: str) -> dict:
 def decode_access_token(token: str) -> dict:
     payload = decode_token(token)
     if payload.get("type") != "access":
-        raise Exception("Invalid token type")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type: expected access token",
+        )
     return payload
 
 
 def decode_refresh_token(token: str) -> dict:
     payload = decode_token(token)
     if payload.get("type") != "refresh":
-        raise Exception("Invalid token type")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type: expected refresh token",
+        )
     return payload

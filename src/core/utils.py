@@ -1,17 +1,32 @@
 from passlib.context import CryptContext
-from src.core.jwt import JWT_ALGORITHM,JWT_SECRET_KEY
-import jwt 
-from datetime import timedelta,datetime
-from fastapi import HTTPException,status 
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def generate_hashed_password(password:str):
-    return password_context.hash(password)
+
+
+def generate_hashed_password(password: str):
+    # Your current environment has passlib+bcrypt mismatch (bcrypt lacks __about__). 
+    # Avoid passlib entirely by using bcrypt directly.
+    import bcrypt
+
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+
+    hashed = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str):
-    return password_context.verify(plain_password, hashed_password)
+    import bcrypt
+
+    plain_bytes = plain_password.encode("utf-8")
+    if len(plain_bytes) > 72:
+        plain_bytes = plain_bytes[:72]
+
+    return bcrypt.checkpw(plain_bytes, hashed_password.encode("utf-8"))
+
+
 
 
 
