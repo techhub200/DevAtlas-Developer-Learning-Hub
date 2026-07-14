@@ -123,9 +123,8 @@ class Course(Base):
         nullable=True,
     )
 
-    # FK to technologies using technology name directly
-    technology_name: Mapped[str] = mapped_column(
-        ForeignKey("technologies.name", ondelete="CASCADE"),
+    technology_id: Mapped[int] = mapped_column(
+        ForeignKey("technologies.id", ondelete="CASCADE"),
         nullable=False,
     )
 
@@ -141,3 +140,98 @@ class Course(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    resource_url: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    # Expected values:
+    # Technology, Course, Article, Video, GitHub Repository
+    resource_type: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+
+class Quiz(Base):
+    __tablename__ = "quizzes"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+
+    course_id: Mapped[int] = mapped_column(
+        ForeignKey("courses.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    title: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    description: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+
+class Bookmark(Base):
+    __tablename__ = "bookmarks"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    course_id: Mapped[int] = mapped_column(
+        ForeignKey("courses.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        # Prevent duplicate bookmarks for the same user+course
+        # (SQLAlchemy will generate a UNIQUE constraint)
+        {"sqlite_autoincrement": True},
+    )
+
+
