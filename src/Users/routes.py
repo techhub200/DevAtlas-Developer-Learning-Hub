@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, UploadFile, File, status
+
 from sqlalchemy.orm import Session
 import shutil
 import os
@@ -7,7 +8,20 @@ import uuid
 from src.database.sessions import get_db
 from src.database.schemas import User
 from src.api.auth.dpendencies import get_current_user
+from src.Users.schemas import GrantAdminRequest
 from src.Users.schemas import UpdateUser, UpdateProfilePictureResponse, UserProfile
+from src.api.auth.dpendencies import require_admin
+from src.Error_Handling.errors import (
+    UserALreadyTaken,
+    UserNameTaken,
+    UserEmailTaken,
+    Forbidden,
+    NotFound,
+    UnsupportedMediaType,
+    RequestEntityTooLarge,
+)
+
+
 
 User_rotues = APIRouter()
 
@@ -45,19 +59,14 @@ async def Update_Profile(
     if update_data.username and update_data.username != current_user.username:
         existing = db.query(User).filter(User.username == update_data.username).first()
         if existing:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Username already taken",
-            )
+            raise UserNameTaken()
 
     # Check for email conflict if a new email is supplied
     if update_data.email and update_data.email != current_user.email:
         existing = db.query(User).filter(User.email == update_data.email).first()
         if existing:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered",
-            )
+            raise UserEmailTaken()
+
 
     # Apply only the supplied fields
     if update_data.username is not None:
@@ -98,18 +107,14 @@ async def Update_Picture(
     MAX_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
     if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=f"Unsupported file type '{file.content_type}'. Allowed: jpeg, png, webp.",
-        )
+        raise UnsupportedMediaType()
+
 
     # Read file and enforce size limit
     contents = await file.read()
     if len(contents) > MAX_SIZE_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File size must not exceed 5 MB.",
-        )
+        raise RequestEntityTooLarge()
+
 
     # Delete old picture file from disk if it exists
     if current_user.profile_picture:
@@ -149,15 +154,40 @@ async def Delete_Profile(
     return {"message": "User account deleted successfully"}
 
 
+@User_rotues.put("/grant-admin")
+async def grant_admin(
+    data: GrantAdminRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Admin-only: grant `is_admin=True` to another user."""
+    # Use get_current_user as requested; perform the admin check on the fetched user.
+    if not current_user.is_admin:
+        raise Forbidden()
+
+
+    target = db.query(User).filter(User.id == data.user_id).first()
+    if not target:
+        raise NotFound()
+
+
+    if target.is_admin:
+        return {"message": "User is already an admin", "user_id": target.id}
+
+    target.is_admin = True
+    db.commit()
+    db.refresh(target)
+
+    return {"message": "Admin privileges granted", "user_id": target.id, "is_admin": target.is_admin}
+
+
 @User_rotues.get("/Profile/{user_id}", response_model=UserProfile)
 async def Get_User_Profile_by_id(user_id: int, db: Session = Depends(get_db)):
     """Get a public profile by user ID (no auth required)."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+        raise NotFound()
+
     return UserProfile(
         user_id=user.id,
         username=user.username,
@@ -168,3 +198,4 @@ async def Get_User_Profile_by_id(user_id: int, db: Session = Depends(get_db)):
         created_at=user.created_at,
         updated_at=user.updated_at,
     )
+

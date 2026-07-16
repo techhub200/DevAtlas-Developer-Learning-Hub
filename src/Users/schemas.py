@@ -22,3 +22,8 @@ class UpdateUser(BaseModel):
 
 class UpdateProfilePictureResponse(BaseModel):
     message: str
+
+
+class GrantAdminRequest(BaseModel):
+    user_id: int
+

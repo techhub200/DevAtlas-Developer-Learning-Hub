@@ -1,7 +1,8 @@
-from sqlalchemy.orm import declarative_base, Mapped, mapped_column
+from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
 from sqlalchemy import func, ForeignKey
 from sqlalchemy import String, Text, DateTime
 from datetime import datetime
+
 
 
 Base = declarative_base()
@@ -13,6 +14,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
     username: Mapped[str] = mapped_column(
+
         String(50),
         unique=True,
         nullable=False,
@@ -63,9 +65,21 @@ class User(Base):
         nullable=False
     )
 
+    technologies: Mapped[list["Technology"]] = relationship(
+        back_populates="created_by_user",
+        cascade="all, delete-orphan",
+    )
+
+    bookmarks: Mapped[list["Bookmark"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+
 
 class Technology(Base):
     __tablename__ = "technologies"
+
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
@@ -105,9 +119,22 @@ class Technology(Base):
         nullable=False,
     )
 
+    created_by_user: Mapped["User"] = relationship(
+        "User",
+        back_populates="technologies",
+    )
+
+
+
+    courses: Mapped[list["Course"]] = relationship(
+        back_populates="technology",
+        cascade="all, delete-orphan",
+    )
+
 
 class Course(Base):
     __tablename__ = "courses"
+
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
@@ -141,8 +168,24 @@ class Course(Base):
         nullable=False,
     )
 
+    technology: Mapped["Technology"] = relationship(
+        back_populates="courses",
+    )
+
+    quizzes: Mapped[list["Quiz"]] = relationship(
+        back_populates="course",
+        cascade="all, delete-orphan",
+    )
+
+    bookmarks: Mapped[list["Bookmark"]] = relationship(
+        back_populates="course",
+        cascade="all, delete-orphan",
+    )
+
+
 
 class Recommendation(Base):
+
     __tablename__ = "recommendations"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -182,6 +225,7 @@ class Recommendation(Base):
 class Quiz(Base):
     __tablename__ = "quizzes"
 
+
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
     course_id: Mapped[int] = mapped_column(
@@ -205,10 +249,16 @@ class Quiz(Base):
         nullable=False,
     )
 
+    course: Mapped["Course"] = relationship(
+        "Course",
+        back_populates="quizzes",
+    )
 
 
 class Bookmark(Base):
+
     __tablename__ = "bookmarks"
+
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
@@ -228,7 +278,19 @@ class Bookmark(Base):
         nullable=False,
     )
 
+    user: Mapped["User"] = relationship(
+
+        "User",
+        back_populates="bookmarks",
+    )
+
+    course: Mapped["Course"] = relationship(
+        "Course",
+        back_populates="bookmarks",
+    )
+
     __table_args__ = (
+
         # Prevent duplicate bookmarks for the same user+course
         # (SQLAlchemy will generate a UNIQUE constraint)
         {"sqlite_autoincrement": True},
