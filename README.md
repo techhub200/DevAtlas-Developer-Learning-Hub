@@ -13,7 +13,7 @@ A scalable backend API built with **FastAPI** for a developer learning platform.
 - Role-Based Access Control (RBAC)
 - Token Revocation using Redis
 - RESTful CRUD APIs
-- PostgreSQL Database Integration
+- MYSQL Database Integration
 - SQLAlchemy ORM
 - Database Migrations with Alembic
 - Pydantic Request & Response Validation
@@ -21,7 +21,6 @@ A scalable backend API built with **FastAPI** for a developer learning platform.
 - Asynchronous API Endpoints
 - Dockerized Application
 - Environment-based Configuration
-- Unit Testing with Pytest
 - Automatic Swagger API Documentation
 
 ---
@@ -33,7 +32,7 @@ A scalable backend API built with **FastAPI** for a developer learning platform.
 - FastAPI
 
 ### Database
-- PostgreSQL
+- MYSQL
 - Redis
 
 ### ORM & Validation
@@ -49,8 +48,6 @@ A scalable backend API built with **FastAPI** for a developer learning platform.
 ### Database Migration
 - Alembic
 
-### Testing
-- Pytest
 
 ### DevOps
 - Docker
@@ -77,11 +74,11 @@ A scalable backend API built with **FastAPI** for a developer learning platform.
 
 - Authentication
 - Users
-- Courses
-- Learning Progress
+- Technologies
+- Recommnendation
 - Bookmarks
-- Resources
-- Roles & Permissions
+- Courses
+- Quizes
 
 ---
 
@@ -92,7 +89,7 @@ A scalable backend API built with **FastAPI** for a developer learning platform.
 ```bash
 git clone https://github.com/techhub200/DevAtlas-Developer-Learning-Hub
 
-cd FAST-API-Beyond-CRUD
+cd DevAtlas-Developer-Learning-Hub
 ```
 
 ---
@@ -134,7 +131,7 @@ Create a `.env` file.
 Example:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost/devatlas
+DATABASE_URL=mysql+pmysql://user:password@localhost/devatlas
 
 SECRET_KEY=your-secret-key
 
@@ -207,11 +204,6 @@ http://localhost:8000/redoc
 
 ---
 
-# Running Tests
-
-```bash
-pytest
-```
 
 ---
 
