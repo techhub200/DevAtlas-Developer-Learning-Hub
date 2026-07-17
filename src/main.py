@@ -13,6 +13,7 @@ from src.Middleware.middleware import register_middleware
 app = FastAPI(title="DevAtlas API")
 register_error_handlers(app)
 register_middleware(app)
+
 app.include_router(auth_router, prefix="/app/auth", tags=["Authentication"])
 app.include_router(User_rotues, prefix="/app/users", tags=["Users"])
 app.include_router(tech_router, prefix="/app/tech", tags=["Technologies"])

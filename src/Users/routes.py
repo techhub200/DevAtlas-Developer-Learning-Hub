@@ -12,7 +12,7 @@ from src.Users.schemas import GrantAdminRequest
 from src.Users.schemas import UpdateUser, UpdateProfilePictureResponse, UserProfile
 from src.api.auth.dpendencies import require_admin
 from src.Error_Handling.errors import (
-    UserALreadyTaken,
+    UserAlreadyTaken,
     UserNameTaken,
     UserEmailTaken,
     Forbidden,
