@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from src.api.auth.dpendencies import require_admin
+from api.auth.dependencies import require_admin
 from src.api.recommendations.schemas import (
     RecommendationCreate,
     RecommendationListResponse,

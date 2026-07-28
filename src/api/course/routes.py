@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from src.database.sessions import get_db
 from src.database.schemas import User
-from src.api.auth.dpendencies import get_current_user, require_admin
+from api.auth.dependencies import get_current_user, require_admin
 from src.api.course.schemas import (
     CourseCreate,
     CourseUpdate,

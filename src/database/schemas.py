@@ -2,7 +2,7 @@ from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
 from sqlalchemy import func, ForeignKey
 from sqlalchemy import String, Text, DateTime
 from datetime import datetime
-
+from sqlalchemy import UniqueConstraint
 
 
 Base = declarative_base()
@@ -264,12 +264,12 @@ class Bookmark(Base):
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=False,unique=True
     )
 
     course_id: Mapped[int] = mapped_column(
         ForeignKey("courses.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=False,unique=True
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -289,11 +289,6 @@ class Bookmark(Base):
         back_populates="bookmarks",
     )
 
-    __table_args__ = (
-
-        # Prevent duplicate bookmarks for the same user+course
-        # (SQLAlchemy will generate a UNIQUE constraint)
-        {"sqlite_autoincrement": True},
-    )
+    
 
 

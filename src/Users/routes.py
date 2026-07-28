@@ -7,10 +7,10 @@ import uuid
 
 from src.database.sessions import get_db
 from src.database.schemas import User
-from src.api.auth.dpendencies import get_current_user
+from api.auth.dependencies import get_current_user
 from src.Users.schemas import GrantAdminRequest
 from src.Users.schemas import UpdateUser, UpdateProfilePictureResponse, UserProfile
-from src.api.auth.dpendencies import require_admin
+from api.auth.dependencies import require_admin
 from src.Error_Handling.errors import (
     UserAlreadyTaken,
     UserNameTaken,

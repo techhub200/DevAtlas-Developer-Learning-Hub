@@ -6,16 +6,14 @@ from src.api.course.schemas import CourseCreate, CourseUpdate
 
 
 class CourseService:
-    """Handles all CRUD business logic for the Course model."""
-
-    # ── Create ───────────────────────────────────────────────────────────────
+    
 
     def create_course(
         self,
         data: CourseCreate,
         db: Session,
     ) -> Course:
-        """Create a new course. Raises 409 if the title already exists. Validates technology."""
+       
         # Validate that the technology actually exists
         tech = db.query(Technology).filter(Technology.name == data.technology_name).first()
         if not tech:
@@ -34,7 +32,7 @@ class CourseService:
         course = Course(
             title=data.title,
             description=data.description,
-            technology_name=tech.name, # Use the exact matched name
+            
         )
         db.add(course)
         db.commit()
