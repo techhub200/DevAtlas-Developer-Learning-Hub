@@ -264,12 +264,12 @@ class Bookmark(Base):
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,unique=True
+        nullable=False
     )
 
     course_id: Mapped[int] = mapped_column(
         ForeignKey("courses.id", ondelete="CASCADE"),
-        nullable=False,unique=True
+        nullable=False
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -289,6 +289,14 @@ class Bookmark(Base):
         back_populates="bookmarks",
     )
 
-    
+    __tablename__ = "bookmarks"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id",
+            "course_id",
+            name="uq_user_course_bookmark",
+        ),
+    )
 
 

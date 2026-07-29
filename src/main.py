@@ -6,6 +6,8 @@ from src.Users.routes import User_rotues
 from src.api.technologies.routes import tech_router
 from src.api.course.routes import course_router
 from src.api.recommendations.routes import recommendations_router
+from src.api.bookmark.routes import bookmark_route
+from src.api.quizzs.routes import quizz_router
 from fastapi.responses import JSONResponse
 from src.Error_Handling.errors import register_error_handlers
 from src.Middleware.middleware import register_middleware
@@ -19,3 +21,5 @@ app.include_router(User_rotues, prefix="/app/users", tags=["Users"])
 app.include_router(tech_router, prefix="/app/tech", tags=["Technologies"])
 app.include_router(course_router, prefix="/app/course", tags=["Courses"])
 app.include_router(recommendations_router, prefix="/app/recommendations", tags=["Recommendations"])
+app.include_router(bookmark_route,prefix="/app/bookmark",tags=["Bookmarks"])
+app.include_router(quizz_router, prefix="/app/quizzs", tags=["Quizzes"])
