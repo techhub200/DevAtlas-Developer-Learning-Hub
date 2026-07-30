@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from src.database.schemas import Course, Technology
 from src.api.course.schemas import CourseCreate, CourseUpdate
@@ -32,7 +32,7 @@ class CourseService:
         course = Course(
             title=data.title,
             description=data.description,
-            
+            technology_id=tech.id,
         )
         db.add(course)
         db.commit()
@@ -49,10 +49,12 @@ class CourseService:
         limit: int = 20,
     ) -> tuple[int, list[Course]]:
         """Return a paginated list of courses. Optional filter by technology name."""
-        query = db.query(Course)
+        query = db.query(Course).options(joinedload(Course.technology))
 
         if technology_name:
-            query = query.filter(Course.technology_name.ilike(f"%{technology_name}%"))
+            query = query.join(Course.technology).filter(
+                Technology.name.ilike(f"%{technology_name}%")
+            )
 
         total = query.count()
         items = query.order_by(Course.created_at.desc()).offset(skip).limit(limit).all()
@@ -62,7 +64,12 @@ class CourseService:
 
     def get_course_by_name(self, title: str, db: Session) -> Course:
         """Fetch a single course by its unique title. Raises 404 if not found."""
-        course = db.query(Course).filter(Course.title.ilike(title)).first()
+        course = (
+            db.query(Course)
+            .options(joinedload(Course.technology))
+            .filter(Course.title.ilike(title))
+            .first()
+        )
         if not course:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -89,14 +96,14 @@ class CourseService:
                     detail=f"Course '{data.title}' already exists.",
                 )
         
-        if data.technology_name and data.technology_name != course.technology_name:
+        if data.technology_name is not None:
             tech = db.query(Technology).filter(Technology.name == data.technology_name).first()
             if not tech:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Technology '{data.technology_name}' not found.",
                 )
-            course.technology_name = tech.name
+            course.technology_id = tech.id
 
         if data.title is not None:
             course.title = data.title

@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from src.core.jwt_utils import decode_access_token
+from src.database.redis import is_access_token_blacklisted
 from src.database.sessions import get_db
 from src.database.schemas import User
 from fastapi import Request
@@ -42,10 +43,19 @@ def get_current_user(
     FastAPI dependency that:
     1. Extracts the Bearer token from the Authorization header.
     2. Decodes and validates the access token.
-    3. Fetches and returns the matching User from the database.
+    3. Checks if the token has been blacklisted (revoked).
+    4. Fetches and returns the matching User from the database.
     """
     token = credentials.credentials
-    payload = decode_access_token(token)  # raises HTTP 417 on invalid/expired token
+    payload = decode_access_token(token)  # raises HTTP 401 on invalid/expired token
+
+    # Check if token has been revoked via logout
+    jti = payload.get("jti")
+    if jti and is_access_token_blacklisted(jti):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+        )
 
     user_id: int | None = payload.get("user", {}).get("user_id")
     if user_id is None:

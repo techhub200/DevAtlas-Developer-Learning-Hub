@@ -249,6 +249,13 @@ class Quiz(Base):
         nullable=False,
     )
 
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     course: Mapped["Course"] = relationship(
         "Course",
         back_populates="quizzes",
@@ -289,8 +296,6 @@ class Bookmark(Base):
         back_populates="bookmarks",
     )
 
-    __tablename__ = "bookmarks"
-
     __table_args__ = (
         UniqueConstraint(
             "user_id",
@@ -298,5 +303,4 @@ class Bookmark(Base):
             name="uq_user_course_bookmark",
         ),
     )
-
 

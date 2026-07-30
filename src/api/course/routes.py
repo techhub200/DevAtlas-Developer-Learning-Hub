@@ -31,8 +31,10 @@ def create_course(
     """
     Admin-only endpoint.
     Creates a new course related to an existing technology.
+    Returns the created course with full details.
     """
-    return course_service.create_course(data, db=db)
+    course = course_service.create_course(data, db=db)
+    return CourseResponse.from_orm_with_technology(course)
 
 
 # ── 2. GET all courses ───────────────────────────────────────────────────────
@@ -54,7 +56,10 @@ def get_all_courses(
     Optionally filter by `technology_name`.
     """
     total, items = course_service.get_courses(db, technology_name=technology_name, skip=skip, limit=limit)
-    return CourseListResponse(total=total, items=items)
+    return CourseListResponse(
+        total=total,
+        items=[CourseResponse.from_orm_with_technology(c) for c in items],
+    )
 
 
 # ── 3. GET course by name (title) ────────────────────────────────────────────
@@ -72,7 +77,8 @@ def get_course_by_name(
     Public endpoint.
     Lookup is case-insensitive.
     """
-    return course_service.get_course_by_name(title, db)
+    course = course_service.get_course_by_name(title, db)
+    return CourseResponse.from_orm_with_technology(course)
 
 
 # ── 4. PATCH update course (admin only) ──────────────────────────────────────
@@ -92,7 +98,8 @@ def update_course(
     Admin-only endpoint.
     Only fields that are provided (non-None) will be updated.
     """
-    return course_service.update_course(title, data, db)
+    course = course_service.update_course(title, data, db)
+    return CourseResponse.from_orm_with_technology(course)
 
 
 # ── 5. DELETE course (admin only) ────────────────────────────────────────────

@@ -30,6 +30,18 @@ class CourseResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+    @staticmethod
+    def from_orm_with_technology(course) -> "CourseResponse":
+        """Build response from a Course ORM object, resolving technology_name from the relationship."""
+        return CourseResponse(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            technology_name=course.technology.name if course.technology else "Unknown",
+            created_at=course.created_at,
+            updated_at=course.updated_at,
+        )
+
 
 class CourseListResponse(BaseModel):
     """Paginated list wrapper."""

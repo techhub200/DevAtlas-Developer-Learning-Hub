@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.database.schemas import Bookmark, Course, Technology
+from src.api.bookmark.schemas import BookmarkResponse
 
 
 class Bookmark_Services:
@@ -16,14 +17,14 @@ class Bookmark_Services:
         )
 
         items = [
-            {
-                "id": bookmark.id,
-                "course_id": course.id,
-                "course_title": course.title,
-                "course_description": course.description,
-                "technology_name": technology.name,
-                "bookmarked_at": bookmark.created_at,
-            }
+            BookmarkResponse(
+                id=bookmark.id,
+                course_id=course.id,
+                course_title=course.title,
+                course_description=course.description,
+                technology_name=technology.name,
+                bookmarked_at=bookmark.created_at,
+            )
             for bookmark, course, technology in bookmarked_courses
         ]
 

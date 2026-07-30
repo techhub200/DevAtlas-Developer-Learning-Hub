@@ -35,8 +35,8 @@ def decode_token(token: str) -> dict:
         return jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_417_EXPECTATION_FAILED,
-            detail="Token not decoded",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
         ) from e
 
 

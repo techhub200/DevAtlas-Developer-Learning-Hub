@@ -23,6 +23,6 @@ class BookmarkListResponse(BaseModel):
     items: list[BookmarkResponse]
 
 
-class delete_bookmars(BaseModel):
+class delete_bookmarks(BaseModel):
     course_id: int
 
