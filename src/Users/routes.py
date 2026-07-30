@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 import shutil
 import os
 import uuid
+import json 
+
+from src.database.redis import r
 
 from src.database.sessions import get_db
 from src.database.schemas import User
@@ -181,14 +184,31 @@ async def grant_admin(
     return {"message": "Admin privileges granted", "user_id": target.id, "is_admin": target.is_admin}
 
 
+import json
+
 @User_rotues.get("/Profile/{user_id}", response_model=UserProfile)
-async def Get_User_Profile_by_id(user_id: int, db: Session = Depends(get_db)):
-    """Get a public profile by user ID (no auth required)."""
+async def Get_User_Profile_by_id(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    cache_key = f"user:{user_id}"
+
+    
+    cached_user = r.get(cache_key)
+
+    if cached_user:
+        print("Cache Hit")
+        return UserProfile.model_validate_json(cached_user)
+
+    print("Cache Miss")
+
+  
     user = db.query(User).filter(User.id == user_id).first()
+
     if not user:
         raise NotFound()
 
-    return UserProfile(
+    response = UserProfile(
         user_id=user.id,
         username=user.username,
         email=user.email,
@@ -198,4 +218,16 @@ async def Get_User_Profile_by_id(user_id: int, db: Session = Depends(get_db)):
         created_at=user.created_at,
         updated_at=user.updated_at,
     )
+
+    r.set(
+        cache_key,
+        response.model_dump_json(),
+        ex=300
+    )
+
+    return response
+
+
+
+
 
