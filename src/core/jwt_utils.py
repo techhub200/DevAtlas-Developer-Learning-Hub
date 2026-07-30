@@ -1,5 +1,7 @@
 
 
+import uuid
+
 from src.core.config import JWT_ALGORITHM, JWT_SECRET_KEY
 import jwt
 from datetime import timedelta, datetime, timezone
@@ -10,6 +12,7 @@ def create_json_web_token(token_type: str, user_details: dict, expiry: timedelta
     payload = {
         "type": token_type,
         "user": user_details,
+        "jti": str(uuid.uuid4()),
         "exp": datetime.now(timezone.utc) + expiry,
     }
     token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)

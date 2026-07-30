@@ -1,13 +1,15 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from datetime import timedelta
 
 from sqlalchemy.orm import Session
-
-from src.api.auth.schemas import User_Sign_Up, User_Login
+from src.api.auth.dependencies import get_token_payload
 from src.core.jwt_utils import create_access_token, create_refresh_token
+from src.database.redis import add_access_token_to_blacklist
 from src.database.sessions import get_db
 from src.database.schemas import User
 from src.core.utils import generate_hashed_password, verify_password
+from src.api.auth.schemas import User_Login,User_Sign_Up
 
 auth_router = APIRouter()
 
@@ -70,3 +72,18 @@ async def user_login(user: User_Login, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "refresh_token": refresh_token
     }
+
+
+@auth_router.post("/Logout")
+async def User_Logout(token_data: dict = Depends(get_token_payload)):
+    payload = token_data["payload"]
+
+    jti = payload["jti"]
+    exp_dt = datetime.fromtimestamp(payload["exp"])
+
+    add_access_token_to_blacklist(
+        jti=jti,
+        exp=exp_dt,
+    )
+
+    return {"message": "Logged out (access token revoked)"}

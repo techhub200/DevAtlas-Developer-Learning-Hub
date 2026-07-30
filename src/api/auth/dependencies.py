@@ -5,9 +5,33 @@ from sqlalchemy.orm import Session
 from src.core.jwt_utils import decode_access_token
 from src.database.sessions import get_db
 from src.database.schemas import User
+from fastapi import Request
 
 # Reusable bearer scheme – this will show the "Authorize" button in Swagger UI
 bearer_scheme = HTTPBearer()
+
+class Access_Token_Bearer(HTTPBearer):
+    def __init__(self):
+        # Ensure FastAPI doesn't auto-return 403/401 before we can log details.
+        super().__init__(auto_error=False)
+
+    async def __call__(self, request: Request):
+        credentials: HTTPAuthorizationCredentials | None = await super().__call__(request)
+        if credentials is None or not credentials.credentials:
+            # Header missing or not in Bearer format.
+            print("[Auth] Missing/invalid Authorization header (expected: Bearer <token>)", flush=True)
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+        token_str = credentials.credentials
+        try:
+            payload = decode_access_token(token_str)
+            return {"token": token_str, "payload": payload}
+        except Exception as e:
+            # decode_access_token is responsible for logging exact jwt errors.
+            print(f"[Auth] decode_access_token failed: {type(e).__name__}: {e}", flush=True)
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+
 
 
 def get_current_user(
@@ -40,6 +64,19 @@ def get_current_user(
     return user
 
 
+def get_token_payload(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> dict:
+    """
+    FastAPI dependency that extracts and decodes the Bearer token,
+    returning the full payload dict including 'jti', 'exp', etc.
+    Use this for endpoints like logout that need token metadata.
+    """
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    return {"token": token, "payload": payload}
+
+
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """
     Dependency that allows access only to admin users.
@@ -51,3 +88,4 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
             detail="Admin privileges required.",
         )
     return current_user
+
