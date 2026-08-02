@@ -1,5 +1,18 @@
 """ configuration to use nginx as a reverse proxy
 
+ #configuration for compression(all json response)
+ gzip on
+ gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_vary on;
+    gzip_proxied any;
+
+ gzip_types
+        application/json
+        application/xml
+        text/plain;
+      # ( text/css, application/xml+rss text/javascript) can be used in future updates 
+
   Serve uploaded profile pictures
     location /media/ {
         alias C:\Users\Divyanshu\Desktop\DevAtlas\uploads;
